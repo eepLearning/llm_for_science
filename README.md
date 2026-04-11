@@ -81,6 +81,12 @@ PDF 파싱에 대한 상세 가이드는 [docs/PDF_PARSING_GUIDE.md](docs/PDF_PA
 - 파서 교체 방법 (`--replace-source`)
 - 크래시 복구 메커니즘
 
+### 파서 비교 이미지
+
+직접 비교용으로 만든 이미지입니다.
+
+![Parser comparison](docs/IMG_7258.PNG)
+
 ---
 
 ## Karpathy Loop 이력

@@ -65,3 +65,9 @@ logs/
 ```
 
 필요한 상세 비교와 백엔드 설명은 [docs/PDF_PARSING_GUIDE.md](docs/PDF_PARSING_GUIDE.md)를 참고하면 됩니다.
+
+## 파서 비교 이미지
+
+직접 비교용으로 만든 이미지입니다.
+
+![Parser comparison](docs/IMG_7258.PNG)

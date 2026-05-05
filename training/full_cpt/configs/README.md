@@ -5,6 +5,7 @@
 현재 포함:
 
 - `qwen35_4b_cpt_h100.yaml`: 단일 H100 기준 기본 권장값(4K, 안정형)
+- `qwen35_4b_cpt_model_load_postcheck_1step.yaml`: 실제 모델 로드 이후 1-step 경로 검증
 - `qwen35_4b_cpt_h100_stable_4k.yaml`: 운영 시작점(안정형)
 - `qwen35_4b_cpt_h100_longctx_8k.yaml`: 긴 문맥 실험용
 - `qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml`: OOM 완화용(8bit optimizer)

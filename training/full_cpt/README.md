@@ -34,6 +34,25 @@ python -m training.full_cpt.train \
 
 `smoke_cpt_config.yaml`은 `model.local_debug_tiny=true`로 설정되어 네트워크 없이 실행 가능합니다.
 
+### 1-1. 실제 모델 로드 후 1-step 검증
+
+오프라인 스모크와 달리, 아래 설정은 `Qwen/Qwen3.5-4B-Base`를 실제로 로드합니다.
+
+```bash
+bash training/full_cpt/scripts/run_cpt_train.sh \
+  training/full_cpt/configs/qwen35_4b_cpt_model_load_postcheck_1step.yaml
+```
+
+이 검증은 다음을 확인합니다.
+
+- Hugging Face에서 모델/토크나이저 실제 로드 가능 여부
+- 1-step forward/backward/optimizer/update/save/eval 최소 경로 정상 동작
+
+주의:
+
+- `training/full_cpt/tests/smoke_*.jsonl`을 데이터로 쓰므로 코퍼스 품질 검증용이 아니라 런타임 경로 검증용입니다.
+- GPU/네트워크/권한 상태에 따라 실패할 수 있습니다.
+
 ### 2. 기본 실행
 
 ```bash

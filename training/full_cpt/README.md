@@ -52,6 +52,9 @@ bash training/full_cpt/scripts/run_cpt_train.sh \
 
 - `training/full_cpt/tests/smoke_*.jsonl`을 데이터로 쓰므로 코퍼스 품질 검증용이 아니라 런타임 경로 검증용입니다.
 - GPU/네트워크/권한 상태에 따라 실패할 수 있습니다.
+- 모델 파일은 기본적으로 Hugging Face 캐시(`~/.cache/huggingface/hub`)에 저장됩니다.
+- 캐시 경로를 바꾸려면 실행 전에 `export HF_HOME=/path/to/hf_cache`를 설정합니다.
+- 로컬 모델을 쓰려면 config의 `model.base_model` 값을 로컬 디렉터리로 변경합니다.
 
 ### 2. 기본 실행
 
@@ -130,6 +133,19 @@ bash training/full_cpt/scripts/run_capacity_loop.sh \
    - 파일: `training/full_cpt/configs/ds_zero2_offload.json`
    - 의미: optimizer state 일부를 CPU로 오프로드해 GPU 메모리 압박을 줄이는 방법입니다.
    - 언제 사용: 위 1~3 단계로도 메모리 문제가 해소되지 않을 때
+
+## 학습 데이터 배치 규칙
+
+- 기본 학습 config가 참조하는 경로:
+  - `data/processed/corpus_v1/train.jsonl`
+  - `data/processed/corpus_v1/valid.jsonl`
+- 데이터 형식:
+  - JSONL
+  - 각 줄은 최소 `text` 필드를 포함 (`{"text": "..."}`)
+- 1-step 검증 config는 품질 검증이 아니라 런타임 경로 검증 목적이므로
+  - `training/full_cpt/tests/smoke_train.jsonl`
+  - `training/full_cpt/tests/smoke_valid.jsonl`
+  를 그대로 사용합니다.
 
 ## 학습이 잘 안될 때 빠른 대응 가이드
 

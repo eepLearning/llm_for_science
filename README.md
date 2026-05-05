@@ -72,6 +72,15 @@ bash training/full_cpt/scripts/run_cpt_train.sh \
 이 단계에서 `Qwen/Qwen3.5-4B-Base`를 실제로 다운로드/로드하고, 1 step 학습 경로를 점검합니다.
 설정 파일: [qwen35_4b_cpt_model_load_postcheck_1step.yaml](training/full_cpt/configs/qwen35_4b_cpt_model_load_postcheck_1step.yaml)
 
+- 모델 파일 위치:
+  - 기본: Hugging Face 캐시(`~/.cache/huggingface/hub`)에 자동 저장
+  - 커스텀 캐시를 쓰려면 실행 전 `export HF_HOME=/path/to/hf_cache`
+  - 이미 내려받은 로컬 모델을 쓰려면 config의 `model.base_model`을 로컬 경로로 변경
+- 학습 데이터 위치(1-step 검증용):
+  - `training/full_cpt/tests/smoke_train.jsonl`
+  - `training/full_cpt/tests/smoke_valid.jsonl`
+  - 목적: 품질 검증이 아니라 "실제 모델 로드 + 1 step 학습 경로" 검증
+
 ### 3) 실제 학습 실행
 
 ```bash
@@ -84,6 +93,17 @@ bash training/full_cpt/scripts/run_cpt_train.sh \
 긴 문맥 실험: [qwen35_4b_cpt_h100_longctx_8k.yaml](training/full_cpt/configs/qwen35_4b_cpt_h100_longctx_8k.yaml)  
 메모리 완화: [qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml](training/full_cpt/configs/qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml)  
 메모리 fallback(선택): [ds_zero2_offload.json](training/full_cpt/configs/ds_zero2_offload.json)
+
+- 실제 학습 데이터 위치:
+  - 기본 config 기준
+    - `data/processed/corpus_v1/train.jsonl`
+    - `data/processed/corpus_v1/valid.jsonl`
+  - 파일 형식: JSONL, 각 줄에 `{"text": "..."}`
+- 각 실험 config의 컨셉:
+  - `stable_4k`: 첫 기준선 확보용(수렴/메모리/속도 균형)
+  - `longctx_8k`: 긴 문맥 의존성 강화 실험용(메모리 부담 증가)
+  - `oom_safe_2k_bnb8`: OOM 완화 우선(학습 가능성 확보)
+  - `ds_zero2_offload`: GPU 메모리 한계 시 최후 수단(fallback)
 
 ## 문서
 

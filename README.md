@@ -231,6 +231,9 @@ python main.py stats
 | `eval_scorer.py` | 품질 점수화 + Karpathy Loop (8차원, 0~100점) |
 | `post_parse_pipeline.sh` | 파싱 완료 후 자동 파이프라인 (index→dedup→eval) |
 | `docs/PDF_PARSING_GUIDE.md` | PDF 파싱 상세 가이드 |
+| `src/llm_training/` | 앞으로 추가할 CPT 학습 코드 패키지 |
+| `training/configs/` | 학습 설정 파일 위치 |
+| `training/scripts/` | 학습 실행 스크립트 위치 |
 
 ## 데이터 구조
 
@@ -244,4 +247,11 @@ data/
 └── index.db                  # DuckDB 인덱스 (SQL 쿼리용)
 reports/                      # eval + stats 리포트
 logs/                         # 실행 로그
+training/
+├── configs/                  # CPT/SFT 등 학습 설정
+├── scripts/                  # 학습 실행 스크립트
+├── runs/                     # 실험 출력물 (git ignore)
+└── checkpoints/              # 체크포인트 (git ignore)
+src/
+└── llm_training/             # 학습 코드 패키지
 ```

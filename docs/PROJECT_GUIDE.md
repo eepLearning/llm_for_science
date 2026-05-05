@@ -1,6 +1,8 @@
 # 프로젝트 상세 가이드
 
-`llm_for_science`는 현대 화학 논문 코퍼스를 구축하고 full fine-tune CPT 실험을 실행하기 위한 저장소입니다.
+`llm_for_science`는 과학 분야 논문 코퍼스를 구축하고 full fine-tune CPT 실험을 실행하기 위한 저장소입니다.
+
+현재 데이터 파이프라인의 수집/파싱 기준은 담당 범위인 화학 분야에 맞춰져 있습니다. 다만 학습 대상은 화학 단독이 아니라 과학 분야 코퍼스 전체로 확장하는 것을 전제로 합니다.
 
 ## 현재 상태
 
@@ -146,9 +148,9 @@ Token Distribution       9.4/10 (x10%)
 Hash Uniqueness         10.0/10 (x10%)
 ```
 
-## 대상 arXiv 카테고리
+## 현재 담당 arXiv 카테고리
 
-arXiv에는 전용 Chemistry 카테고리가 없어 화학 논문은 physics, cond-mat, q-bio, cs 등에 분산되어 있습니다.
+현재 파이프라인은 화학 담당 데이터를 수집하기 위해 아래 카테고리를 사용합니다. arXiv에는 전용 Chemistry 카테고리가 없어 화학 관련 논문은 physics, cond-mat, q-bio, cs 등에 분산되어 있습니다.
 
 | 카테고리 | 분야 |
 |----------|------|

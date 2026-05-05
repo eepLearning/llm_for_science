@@ -276,7 +276,7 @@ def _parse_years(year_str: str) -> tuple[int, int]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="현대 화학 논문 데이터 파이프라인",
+        description="과학 논문 데이터 파이프라인",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", help="서브커맨드")

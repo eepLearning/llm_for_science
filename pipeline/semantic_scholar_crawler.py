@@ -1,4 +1,4 @@
-"""Semantic Scholar API 크롤러. arXiv에 없는 화학 논문 보충 수집."""
+"""Semantic Scholar API crawler for the current chemistry-focused pipeline."""
 
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ class SemanticScholarCrawler:
         return False
 
     def crawl(self, max_results: int | None = None) -> int:
-        """S2 API로 화학 논문 수집. 수집 건수 반환."""
+        """S2 API로 현재 담당 범위의 화학 논문을 수집한다. 수집 건수 반환."""
         offset = self.ckpt.get("offset", 0)
         fetched = 0
 

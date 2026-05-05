@@ -1,6 +1,6 @@
 run:
   name: "smoke"
-  output_dir: "training/tests/out_smoke"
+  output_dir: "training/full_cpt/tests/out_smoke"
   seed: 42
   report_to: []
   log_interval_steps: 1
@@ -22,8 +22,8 @@ tokenizer:
   add_special_tokens: true
 
 data:
-  train_file: "training/tests/smoke_train.jsonl"
-  valid_file: "training/tests/smoke_valid.jsonl"
+  train_file: "training/full_cpt/tests/smoke_train.jsonl"
+  valid_file: "training/full_cpt/tests/smoke_valid.jsonl"
   text_field: "text"
   preprocessing_num_workers: 1
   max_seq_length: 64

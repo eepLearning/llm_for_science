@@ -10,7 +10,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 BASE_CONFIG="$1"
-OUT_DIR="training/tests/capacity_loop"
+OUT_DIR="training/full_cpt/tests/capacity_loop"
 LOG_DIR="logs/cpt/capacity_loop"
 mkdir -p "$OUT_DIR" "$LOG_DIR"
 
@@ -49,7 +49,7 @@ import yaml
 from copy import deepcopy
 cfg = yaml.safe_load(open("$BASE_CONFIG", "r", encoding="utf-8"))
 cfg = deepcopy(cfg)
-cfg["run"]["output_dir"] = "training/tests/capacity_loop/out_case_${i}"
+cfg["run"]["output_dir"] = "training/full_cpt/tests/capacity_loop/out_case_${i}"
 cfg["data"]["max_seq_length"] = int("$SEQ")
 cfg["trainer"]["gradient_accumulation_steps"] = int("$GA")
 cfg["trainer"]["per_device_train_batch_size"] = int("$BS")
@@ -58,7 +58,7 @@ with open("$CFG", "w", encoding="utf-8") as f:
 PY
 
   status="PASS"
-  if ! "$PYTHON_BIN" -m training.train_cpt --config "$CFG" --dry_run > "$LOG" 2>&1; then
+  if ! "$PYTHON_BIN" -m training.full_cpt.train --config "$CFG" --dry_run > "$LOG" 2>&1; then
     status="FAIL"
   fi
 

@@ -45,7 +45,7 @@ echo "[INFO] Starting CPT training"
 echo "[INFO] Config: ${CONFIG_PATH}"
 echo "[INFO] Log: ${RUN_LOG}"
 
-"${PYTHON_BIN}" -m training.train_cpt \
+"${PYTHON_BIN}" -m training.full_cpt.train \
   --config "${CONFIG_PATH}" \
   "${RESUME_ARGS[@]}" \
   2>&1 | tee "${RUN_LOG}"

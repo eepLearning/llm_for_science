@@ -58,6 +58,29 @@ bash training/scripts/run_capacity_loop.sh training/tests/smoke_cpt_config.yaml
 
 ---
 
+## `pack_sequences` 동작 정리
+
+`data.pack_sequences`는 기본적으로 `false`이며, `true`일 때만 시퀀스 패킹이 적용됩니다.
+
+- `pack_sequences: false`
+  - 문서별 토크나이즈 + `truncation=True` + `max_seq_length` 초과분 절단
+  - 구현 단순, 디버그에 유리
+- `pack_sequences: true`
+  - 문서별 토크나이즈는 `truncation=False`
+  - 이후 여러 샘플을 이어붙여 `max_seq_length` 고정 블록으로 재분할
+  - `labels = input_ids`로 CPT(autoregressive next-token) loss 계산
+  - 장점: 패딩 낭비 감소, 토큰 효율 향상
+  - 주의: 문서 경계 보존이 약해질 수 있음
+
+### 빠른 체크리스트
+
+- 설정 파일에서 `data.pack_sequences` 값 확인
+- 실행 로그에서 사용 config 경로 확인
+- 전처리 후 샘플 길이가 `max_seq_length` 고정 블록으로 형성되는지 확인
+- 실험 기록에 `pack_sequences` 값을 함께 남겨 재현성 보장
+
+---
+
 ## 최소 완료 기준 (MVP)
 
 - 통합 코퍼스 1개 버전 이상 준비

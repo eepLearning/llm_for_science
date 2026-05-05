@@ -7,6 +7,7 @@ import inspect
 import json
 import os
 import random
+from itertools import chain
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
@@ -131,6 +132,7 @@ def _build_hf(cfg: Dict[str, Any], local_files_only: bool) -> BuildResult:
     text_field = data_cfg.get("text_field", "text")
     max_len = int(data_cfg.get("max_seq_length", 2048))
     add_eos = bool(data_cfg.get("add_eos_token", True))
+    pack_sequences = bool(data_cfg.get("pack_sequences", False))
 
     def preprocess(batch: Dict[str, List[str]]) -> Dict[str, List[List[int]]]:
         texts = []
@@ -141,13 +143,28 @@ def _build_hf(cfg: Dict[str, Any], local_files_only: bool) -> BuildResult:
             texts.append(s)
         out = tokenizer(
             texts,
-            truncation=True,
-            max_length=max_len,
+            truncation=not pack_sequences,
+            max_length=max_len if not pack_sequences else None,
             padding=False,
             add_special_tokens=bool(tok_cfg.get("add_special_tokens", True)),
         )
         out["labels"] = out["input_ids"].copy()
         return out
+
+    def group_texts(examples: Dict[str, List[List[int]]]) -> Dict[str, List[List[int]]]:
+        concatenated_examples = {k: list(chain.from_iterable(examples[k])) for k in examples.keys()}
+        total_length = len(concatenated_examples["input_ids"])
+        total_length = (total_length // max_len) * max_len
+        if total_length == 0:
+            empty = {k: [] for k in concatenated_examples.keys()}
+            empty["labels"] = []
+            return empty
+        result = {
+            k: [t[i : i + max_len] for i in range(0, total_length, max_len)]
+            for k, t in concatenated_examples.items()
+        }
+        result["labels"] = [ids[:] for ids in result["input_ids"]]
+        return result
 
     train_ds = train_ds.map(
         preprocess,
@@ -161,6 +178,9 @@ def _build_hf(cfg: Dict[str, Any], local_files_only: bool) -> BuildResult:
         remove_columns=[c for c in valid_ds.column_names if c != text_field],
         num_proc=int(data_cfg.get("preprocessing_num_workers", 1)),
     )
+    if pack_sequences:
+        train_ds = train_ds.map(group_texts, batched=True, num_proc=int(data_cfg.get("preprocessing_num_workers", 1)))
+        valid_ds = valid_ds.map(group_texts, batched=True, num_proc=int(data_cfg.get("preprocessing_num_workers", 1)))
     return BuildResult(train_dataset=train_ds, eval_dataset=valid_ds, tokenizer=tokenizer)
 
 

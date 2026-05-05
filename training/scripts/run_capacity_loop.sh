@@ -14,6 +14,18 @@ OUT_DIR="training/tests/capacity_loop"
 LOG_DIR="logs/cpt/capacity_loop"
 mkdir -p "$OUT_DIR" "$LOG_DIR"
 
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="$(command -v python3)"
+  elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="$(command -v python)"
+  else
+    echo "[ERROR] Python interpreter not found (python3/python)."
+    exit 1
+  fi
+fi
+
 # seq_len, grad_accum, train_bs
 CASES=(
   "64,1,1"
@@ -32,7 +44,7 @@ for case in "${CASES[@]}"; do
   CFG="$OUT_DIR/case_${i}.yaml"
   LOG="$LOG_DIR/case_${i}.log"
 
-  python - <<PY
+  "$PYTHON_BIN" - <<PY
 import yaml
 from copy import deepcopy
 cfg = yaml.safe_load(open("$BASE_CONFIG", "r", encoding="utf-8"))
@@ -46,7 +58,7 @@ with open("$CFG", "w", encoding="utf-8") as f:
 PY
 
   status="PASS"
-  if ! python -m training.train_cpt --config "$CFG" --dry_run > "$LOG" 2>&1; then
+  if ! "$PYTHON_BIN" -m training.train_cpt --config "$CFG" --dry_run > "$LOG" 2>&1; then
     status="FAIL"
   fi
 

@@ -23,6 +23,18 @@ export CUDA_DEVICE_MAX_CONNECTIONS=1
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="$(command -v python3)"
+  elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="$(command -v python)"
+  else
+    echo "[ERROR] Python interpreter not found (python3/python)."
+    exit 1
+  fi
+fi
+
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 RUN_LOG_DIR="logs/cpt"
 mkdir -p "${RUN_LOG_DIR}"
@@ -33,7 +45,7 @@ echo "[INFO] Starting CPT training"
 echo "[INFO] Config: ${CONFIG_PATH}"
 echo "[INFO] Log: ${RUN_LOG}"
 
-python -m training.train_cpt \
+"${PYTHON_BIN}" -m training.train_cpt \
   --config "${CONFIG_PATH}" \
   "${RESUME_ARGS[@]}" \
   2>&1 | tee "${RUN_LOG}"

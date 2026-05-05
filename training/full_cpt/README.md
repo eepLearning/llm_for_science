@@ -154,22 +154,26 @@ bash training/full_cpt/scripts/run_capacity_loop.sh \
    - 파일: `training/full_cpt/configs/qwen35_4b_cpt_h100_stable_4k.yaml`
    - 의미: 단일 H100에서 메모리/속도/수렴의 균형이 좋은 기본 프로파일입니다.
    - 언제 사용: 첫 실험, 기준선(baseline) 확보가 목적일 때
+   - 핵심 옵션: `max_seq_length=4096`, `gradient_accumulation_steps=32`, `optimizer.name=adamw_torch_fused`
 
-2. 긴 문맥 학습 실험(8K)
+2. 더 긴 문서를 한 번에 학습하는 실험(8K)
    - 파일: `training/full_cpt/configs/qwen35_4b_cpt_h100_longctx_8k.yaml`
-   - 의미: 더 긴 컨텍스트 의존성을 학습하기 위한 프로파일입니다.
+   - 의미: 한 샘플에서 더 긴 문서 구간을 함께 보도록 하여, 장문 문서 처리 성능 차이를 비교하는 프로파일입니다.
    - 언제 사용: 법률/논문/코드처럼 긴 문맥이 중요한 데이터에서 성능 비교가 필요할 때
+   - 핵심 옵션: `max_seq_length=8192`, `gradient_accumulation_steps=16` (토큰/업데이트 규모는 유사하게 유지)
 
 3. 메모리 여유가 부족할 때(완화형 2K + 8bit optimizer)
    - 파일: `training/full_cpt/configs/qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml`
    - 의미: OOM 가능성을 낮추는 대신 처리량/품질 특성이 달라질 수 있는 프로파일입니다.
    - 언제 사용: 4K/8K 설정에서 반복적으로 OOM이 발생할 때
+   - 핵심 옵션: `max_seq_length=2048`, `optimizer.name=adamw_bnb_8bit`, `gradient_accumulation_steps=32`
 
 4. 최종 fallback(DeepSpeed offload)
    - 설정 키: `runtime.deepspeed_config`
    - 파일: `training/full_cpt/configs/ds_zero2_offload.json`
    - 의미: optimizer state 일부를 CPU로 오프로드해 GPU 메모리 압박을 줄이는 방법입니다.
    - 언제 사용: 위 1~3 단계로도 메모리 문제가 해소되지 않을 때
+   - 핵심 옵션: ZeRO stage 2 + `offload_optimizer.device=cpu`
 
 ## 학습 데이터 배치 규칙
 

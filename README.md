@@ -102,9 +102,13 @@ H100 기본 설정값/설명/출력 예시: [training/full_cpt/README.md](traini
   - 파일 형식: JSONL, 각 줄에 `{"text": "..."}`
 - 각 실험 config의 컨셉:
   - `stable_4k`: 첫 기준선 확보용(수렴/메모리/속도 균형)
-  - `longctx_8k`: 긴 문맥 의존성 강화 실험용(메모리 부담 증가)
+    - 핵심 옵션: `max_seq_length=4096`, `grad_accum=32`, `optim=adamw_torch_fused`
+  - `longctx_8k`: 더 긴 문서를 한 번에 보도록 하는 실험용(메모리 부담 증가)
+    - 핵심 옵션: `max_seq_length=8192`, `grad_accum=16` (토큰/업데이트 규모는 유사하게 유지)
   - `oom_safe_2k_bnb8`: OOM 완화 우선(학습 가능성 확보)
+    - 핵심 옵션: `max_seq_length=2048`, `optim=adamw_bnb_8bit`, `grad_accum=32`
   - `ds_zero2_offload`: GPU 메모리 한계 시 최후 수단(fallback)
+    - 핵심 옵션: `runtime.deepspeed_config=ds_zero2_offload.json` (optimizer state 일부 CPU offload)
 
 ## 문서
 

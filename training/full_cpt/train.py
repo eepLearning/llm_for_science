@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import inspect
 import json
+import math
 import os
 import random
 from itertools import chain
@@ -305,7 +306,15 @@ def main() -> None:
     else:
         warmup_ratio = float(sch_cfg.get("warmup_ratio", 0.0))
         if warmup_ratio > 0:
-            total_steps = max_steps if max_steps > 0 else int(tr_cfg.get("num_train_epochs", 1)) * max(1, len(build.train_dataset))
+            if max_steps > 0:
+                total_steps = max_steps
+            else:
+                epochs = float(tr_cfg.get("num_train_epochs", 1))
+                train_rows = max(1, len(build.train_dataset))
+                micro_batch = max(1, int(tr_cfg.get("per_device_train_batch_size", 1)))
+                grad_accum = max(1, int(tr_cfg.get("gradient_accumulation_steps", 1)))
+                steps_per_epoch = max(1, math.ceil(train_rows / micro_batch / grad_accum))
+                total_steps = max(1, int(math.ceil(epochs * steps_per_epoch)))
             ta_kwargs["warmup_steps"] = max(1, int(total_steps * warmup_ratio))
     valid_params = set(inspect.signature(TrainingArguments.__init__).parameters.keys())
     deepspeed_cfg = cfg.get("runtime", {}).get("deepspeed_config")

@@ -110,6 +110,43 @@ H100 기본 설정값/설명/출력 예시: [training/full_cpt/README.md](traini
   - `ds_zero2_offload`: GPU 메모리 한계 시 최후 수단(fallback)
     - 핵심 옵션: `runtime.deepspeed_config=ds_zero2_offload.json` (optimizer state 일부 CPU offload)
 
+### 3-1) H100 기본 학습 설정값(요약)
+
+기준 config: `training/full_cpt/configs/qwen35_4b_cpt_h100_stable_4k.yaml`
+
+```yaml
+model.base_model: Qwen/Qwen3.5-4B-Base
+model.torch_dtype: bfloat16
+model.attn_implementation: sdpa
+model.gradient_checkpointing: true
+data.pack_sequences: true
+data.max_seq_length: 4096
+trainer.per_device_train_batch_size: 1
+trainer.gradient_accumulation_steps: 32
+optimizer.name: adamw_torch_fused
+optimizer.learning_rate: 1.0e-5
+scheduler.type: cosine
+scheduler.warmup_ratio: 0.03
+runtime.tf32: true
+```
+
+- `max_seq_length=4096`: 긴 문서 문맥과 메모리 안정성의 균형점
+- `batch=1`, `grad_accum=32`: 단일 H100에서 effective batch 확보
+- `bf16 + tf32`: H100에서 일반적으로 성능/안정성 균형이 좋음
+- `adamw_torch_fused`: 기본 AdamW 대비 처리량 개선 기대
+- `pack_sequences=true`: padding 낭비를 줄여 token 효율 개선
+
+예상 출력 예시(정상 동작 시):
+
+```text
+[INFO] Starting CPT training
+[INFO] Config: training/full_cpt/configs/qwen35_4b_cpt_h100_stable_4k.yaml
+...
+{'loss': ..., 'grad_norm': ..., 'learning_rate': ..., 'epoch': ...}
+...
+[DONE] Training completed
+```
+
 ## 문서
 
 - [프로젝트 상세 가이드](docs/PROJECT_GUIDE.md)

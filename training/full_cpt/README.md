@@ -72,6 +72,46 @@ bash training/full_cpt/scripts/run_capacity_loop.sh \
   - 장점: 패딩 낭비 감소, 토큰 효율 향상
   - 주의: 문서 경계 보존이 약해질 수 있음
 
+## 문서 기준 반영 체크 (Qwen3.5 CPT)
+
+아래는 운영 가이드 문서 기준으로 현재 코드/설정에 반영한 항목입니다.
+
+- 반영됨
+  - `labels = input_ids` 기반 CPT(next-token loss)
+  - `pack_sequences` 경로 구현(문서 concat 후 block 분할)
+  - `optimizer.name`을 `TrainingArguments.optim`으로 연결
+  - `runtime.tf32` 지원
+  - `model.attn_implementation` 지원(`sdpa`/`flash_attention_2`)
+  - `gradient_checkpointing_kwargs` 지원
+  - `runtime.deepspeed_config` 지원
+- 의도적으로 기본 미적용
+  - `flash_attention_2` 강제 기본값: 설치/환경 의존성이 있어 기본은 `sdpa`
+  - DeepSpeed offload 기본 활성화: 단일 H100 4K 기준은 offload 없이 먼저 검증
+  - vision branch 별도 freeze 로직: 현재 엔트리포인트는 `AutoModelForCausalLM` 경로 중심
+
+## 권장 실행 순서
+
+1. 안정형 시작:
+   - `training/full_cpt/configs/qwen35_4b_cpt_h100_stable_4k.yaml`
+2. 장문맥 실험:
+   - `training/full_cpt/configs/qwen35_4b_cpt_h100_longctx_8k.yaml`
+3. OOM 완화:
+   - `training/full_cpt/configs/qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml`
+4. 마지막 fallback:
+   - `runtime.deepspeed_config: training/full_cpt/configs/ds_zero2_offload.json`
+
+## 학습이 잘 안될 때 빠른 대응
+
+- OOM:
+  - `max_seq_length` 8192 → 4096 → 2048
+  - `optimizer.name`을 `adamw_bnb_8bit`로 변경
+- loss 진동/발산:
+  - `learning_rate`를 절반으로 감소
+  - `warmup_ratio` 증가(예: 0.03 → 0.05)
+- 처리량 저하:
+  - `attn_implementation: sdpa`로 고정 후 기준선 확인
+  - dataloader worker 수를 시스템 I/O에 맞춰 조정
+
 ## 최소 완료 기준
 
 - 통합 코퍼스 1개 버전 이상 준비

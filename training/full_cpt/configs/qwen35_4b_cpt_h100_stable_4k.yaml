@@ -1,6 +1,6 @@
 run:
-  name: "qwen35_4b_cpt_v2"
-  output_dir: "outputs/qwen35_4b_cpt_v2"
+  name: "qwen35_4b_cpt_h100_stable_4k"
+  output_dir: "outputs/qwen35_4b_cpt_h100_stable_4k"
   seed: 42
   report_to: ["wandb"]
   log_interval_steps: 10
@@ -16,10 +16,6 @@ model:
   gradient_checkpointing_kwargs:
     use_reentrant: false
   attn_implementation: "sdpa"
-  # Qwen model card compatibility notes:
-  # - Base model is intended for fine-tuning/research (CPT compatible)
-  # - Control tokens (<|im_start|>, <|im_end|>) exist for chat-template style SFT/PEFT
-  # - Native context can be very long, but 2k warm-start is safer for single-GPU CPT
 
 tokenizer:
   use_fast: true
@@ -62,16 +58,10 @@ trainer:
   evaluation_strategy: "steps"
   save_strategy: "steps"
   logging_strategy: "steps"
-  load_best_model_at_end: false
 
 runtime:
   device: "cuda"
   expected_gpus: 1
   gpu_type_hint: "H100-80GB"
   tf32: true
-  resume_from_checkpoint: null
 
-compliance:
-  model_card_url: "https://huggingface.co/Qwen/Qwen3.5-4B-Base"
-  license: "apache-2.0"
-  intended_use: "continued_pretraining_and_research"

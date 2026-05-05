@@ -12,6 +12,21 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 
 
+def _enable_tf32_if_configured(cfg: Dict[str, Any]) -> None:
+    runtime_cfg = cfg.get("runtime", {})
+    trainer_cfg = cfg.get("trainer", {})
+    tf32 = bool(runtime_cfg.get("tf32", trainer_cfg.get("tf32", False)))
+    if not tf32:
+        return
+    try:
+        import torch
+
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+    except Exception:
+        pass
+
+
 def _load_yaml(path: str) -> Dict[str, Any]:
     try:
         import yaml  # type: ignore
@@ -193,6 +208,7 @@ def main() -> None:
     args = parser.parse_args()
 
     cfg = _load_yaml(args.config)
+    _enable_tf32_if_configured(cfg)
     seed = int(cfg.get("run", {}).get("seed", 42))
     _set_seed(seed)
 
@@ -214,11 +230,17 @@ def main() -> None:
 
         try:
             build = _build_hf(cfg, local_files_only=args.local_files_only)
+            model_kwargs: Dict[str, Any] = {
+                "trust_remote_code": bool(model_cfg.get("trust_remote_code", True)),
+                "torch_dtype": model_cfg.get("torch_dtype", "auto"),
+                "local_files_only": args.local_files_only,
+            }
+            attn_impl = model_cfg.get("attn_implementation")
+            if attn_impl:
+                model_kwargs["attn_implementation"] = attn_impl
             model = AutoModelForCausalLM.from_pretrained(
                 model_cfg["base_model"],
-                trust_remote_code=bool(model_cfg.get("trust_remote_code", True)),
-                torch_dtype=model_cfg.get("torch_dtype", "auto"),
-                local_files_only=args.local_files_only,
+                **model_kwargs,
             )
         except Exception as exc:
             raise RuntimeError(
@@ -229,7 +251,11 @@ def main() -> None:
             ) from exc
 
         if bool(model_cfg.get("gradient_checkpointing", False)):
-            model.gradient_checkpointing_enable()
+            gc_kwargs = model_cfg.get("gradient_checkpointing_kwargs", {})
+            if isinstance(gc_kwargs, dict) and gc_kwargs:
+                model.gradient_checkpointing_enable(gradient_checkpointing_kwargs=gc_kwargs)
+            else:
+                model.gradient_checkpointing_enable()
 
     run_cfg = cfg["run"]
     tr_cfg = cfg["trainer"]
@@ -265,8 +291,10 @@ def main() -> None:
         "adam_epsilon": float(opt_cfg.get("eps", 1e-8)),
         "max_grad_norm": float(opt_cfg.get("max_grad_norm", 1.0)),
         "lr_scheduler_type": sch_cfg.get("type", "cosine"),
+        "optim": opt_cfg.get("name", "adamw_torch"),
         "report_to": run_cfg.get("report_to", []),
         "seed": seed,
+        "tf32": bool(cfg.get("runtime", {}).get("tf32", tr_cfg.get("tf32", False))),
     }
 
     # transformers 버전에 따라 warmup_ratio 지원/경고가 달라서
@@ -280,6 +308,9 @@ def main() -> None:
             total_steps = max_steps if max_steps > 0 else int(tr_cfg.get("num_train_epochs", 1)) * max(1, len(build.train_dataset))
             ta_kwargs["warmup_steps"] = max(1, int(total_steps * warmup_ratio))
     valid_params = set(inspect.signature(TrainingArguments.__init__).parameters.keys())
+    deepspeed_cfg = cfg.get("runtime", {}).get("deepspeed_config")
+    if deepspeed_cfg and "deepspeed" in valid_params:
+        ta_kwargs["deepspeed"] = str(deepspeed_cfg)
     ta_kwargs = {k: v for k, v in ta_kwargs.items() if k in valid_params}
     training_args = TrainingArguments(**ta_kwargs)
 

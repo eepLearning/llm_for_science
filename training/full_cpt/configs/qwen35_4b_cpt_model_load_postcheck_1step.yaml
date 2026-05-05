@@ -28,8 +28,8 @@ data:
   valid_file: "training/full_cpt/tests/smoke_valid.jsonl"
   text_field: "text"
   preprocessing_num_workers: 1
-  pack_sequences: true
-  max_seq_length: 2048
+  pack_sequences: false
+  max_seq_length: 256
   add_eos_token: true
 
 optimizer:
@@ -64,4 +64,3 @@ runtime:
   expected_gpus: 1
   gpu_type_hint: "H100-80GB"
   tf32: true
-

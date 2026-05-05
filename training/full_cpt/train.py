@@ -185,13 +185,13 @@ def _build_hf(cfg: Dict[str, Any], local_files_only: bool) -> BuildResult:
     train_ds = train_ds.map(
         preprocess,
         batched=True,
-        remove_columns=[c for c in train_ds.column_names if c != text_field],
+        remove_columns=train_ds.column_names,
         num_proc=int(data_cfg.get("preprocessing_num_workers", 1)),
     )
     valid_ds = valid_ds.map(
         preprocess,
         batched=True,
-        remove_columns=[c for c in valid_ds.column_names if c != text_field],
+        remove_columns=valid_ds.column_names,
         num_proc=int(data_cfg.get("preprocessing_num_workers", 1)),
     )
     if pack_sequences:

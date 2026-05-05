@@ -93,6 +93,7 @@ bash training/full_cpt/scripts/run_cpt_train.sh \
 긴 문맥 실험: [qwen35_4b_cpt_h100_longctx_8k.yaml](training/full_cpt/configs/qwen35_4b_cpt_h100_longctx_8k.yaml)  
 메모리 완화: [qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml](training/full_cpt/configs/qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml)  
 메모리 fallback(선택): [ds_zero2_offload.json](training/full_cpt/configs/ds_zero2_offload.json)
+H100 기본 설정값/설명/출력 예시: [training/full_cpt/README.md](training/full_cpt/README.md)
 
 - 실제 학습 데이터 위치:
   - 기본 config 기준

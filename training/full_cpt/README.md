@@ -108,18 +108,30 @@ bash training/full_cpt/scripts/run_capacity_loop.sh \
   - DeepSpeed offload 기본 활성화: 단일 H100 4K 기준은 offload 없이 먼저 검증
   - vision branch 별도 freeze 로직: 현재 엔트리포인트는 `AutoModelForCausalLM` 경로 중심
 
-## 권장 실행 순서
+## 권장 실행 순서 (의미 설명 포함)
 
-1. 안정형 시작:
-   - `training/full_cpt/configs/qwen35_4b_cpt_h100_stable_4k.yaml`
-2. 장문맥 실험:
-   - `training/full_cpt/configs/qwen35_4b_cpt_h100_longctx_8k.yaml`
-3. OOM 완화:
-   - `training/full_cpt/configs/qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml`
-4. 마지막 fallback:
-   - `runtime.deepspeed_config: training/full_cpt/configs/ds_zero2_offload.json`
+1. 기본 학습 시작점(균형형 4K)
+   - 파일: `training/full_cpt/configs/qwen35_4b_cpt_h100_stable_4k.yaml`
+   - 의미: 단일 H100에서 메모리/속도/수렴의 균형이 좋은 기본 프로파일입니다.
+   - 언제 사용: 첫 실험, 기준선(baseline) 확보가 목적일 때
 
-## 학습이 잘 안될 때 빠른 대응
+2. 긴 문맥 학습 실험(8K)
+   - 파일: `training/full_cpt/configs/qwen35_4b_cpt_h100_longctx_8k.yaml`
+   - 의미: 더 긴 컨텍스트 의존성을 학습하기 위한 프로파일입니다.
+   - 언제 사용: 법률/논문/코드처럼 긴 문맥이 중요한 데이터에서 성능 비교가 필요할 때
+
+3. 메모리 여유가 부족할 때(완화형 2K + 8bit optimizer)
+   - 파일: `training/full_cpt/configs/qwen35_4b_cpt_h100_oom_safe_2k_bnb8.yaml`
+   - 의미: OOM 가능성을 낮추는 대신 처리량/품질 특성이 달라질 수 있는 프로파일입니다.
+   - 언제 사용: 4K/8K 설정에서 반복적으로 OOM이 발생할 때
+
+4. 최종 fallback(DeepSpeed offload)
+   - 설정 키: `runtime.deepspeed_config`
+   - 파일: `training/full_cpt/configs/ds_zero2_offload.json`
+   - 의미: optimizer state 일부를 CPU로 오프로드해 GPU 메모리 압박을 줄이는 방법입니다.
+   - 언제 사용: 위 1~3 단계로도 메모리 문제가 해소되지 않을 때
+
+## 학습이 잘 안될 때 빠른 대응 가이드
 
 - OOM:
   - `max_seq_length` 8192 → 4096 → 2048
@@ -131,7 +143,7 @@ bash training/full_cpt/scripts/run_capacity_loop.sh \
   - `attn_implementation: sdpa`로 고정 후 기준선 확인
   - dataloader worker 수를 시스템 I/O에 맞춰 조정
 
-## 최소 완료 기준
+## 최소 완료 기준 (실험 종료 체크리스트)
 
 - 통합 코퍼스 1개 버전 이상 준비
 - CPT 1회 완주 및 체크포인트 저장

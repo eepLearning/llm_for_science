@@ -4,3 +4,11 @@ reports/
 __pycache__/
 *.pyc
 .env
+.venv/
+.DS_Store
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+training/runs/
+training/checkpoints/
+outputs/

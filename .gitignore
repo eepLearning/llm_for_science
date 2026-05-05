@@ -12,3 +12,5 @@ __pycache__/
 training/runs/
 training/checkpoints/
 outputs/
+training/tests/capacity_loop/
+training/tests/out_smoke/
